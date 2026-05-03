@@ -136,9 +136,9 @@ class JobCleaner:
             return result
 
         # Handle "X,000 – Y,000" or "X - Y" or "X to Y"
-       range_match = re.search(
-    r"([\d,]+(?:\.\d+)?)\s*(?:[-–]|to)\s*[₹$£]?\s*([\d,]+(?:\.\d+)?)", raw
-)
+        range_match = re.search(
+            r"([\d,]+(?:\.\d+)?)\s*(?:[-–]|to)\s*[₹$£]?\s*([\d,]+(?:\.\d+)?)", raw
+        )
         if range_match:
             result["min"] = float(range_match.group(1).replace(",", ""))
             result["max"] = float(range_match.group(2).replace(",", ""))
