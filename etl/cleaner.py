@@ -92,65 +92,67 @@ class JobCleaner:
         df = self._annualize_salary(df)
         return df
 
-    @staticmethod
-    def _parse_salary_string(raw: str) -> dict:
-        result = {"min": np.nan, "max": np.nan, "currency": "", "period": ""}
-        if not raw:
-            return result
+    
 
-        raw_lower = raw.lower()
-
-        # Detect currency
-        if "₹" in raw or "inr" in raw_lower or "lpa" in raw_lower:
-            result["currency"] = "INR"
-        elif "$" in raw or "usd" in raw_lower:
-            result["currency"] = "USD"
-        elif "£" in raw or "gbp" in raw_lower:
-            result["currency"] = "GBP"
-
-        # Detect period
-        if re.search(r"\bper\s+hour\b|/hr\b|hourly", raw_lower):
-            result["period"] = "hourly"
-        elif re.search(r"\bper\s+month\b|/mo\b|monthly|p\.m\.", raw_lower):
-            result["period"] = "monthly"
-        else:
-            result["period"] = "annual"
-
-        # Handle "X LPA" format (Indian: Lakhs Per Annum)
-        lpa_match = re.search(
-            r"([\d.]+)\s*[-–to]+\s*([\d.]+)\s*lpa", raw_lower
-        )
-        if lpa_match:
-            result["min"] = float(lpa_match.group(1)) * 100_000
-            result["max"] = float(lpa_match.group(2)) * 100_000
-            result["currency"] = "INR"
-            result["period"] = "annual"
-            return result
-
-        single_lpa = re.search(r"([\d.]+)\s*lpa", raw_lower)
-        if single_lpa:
-            val = float(single_lpa.group(1)) * 100_000
-            result["min"] = result["max"] = val
-            result["currency"] = "INR"
-            result["period"] = "annual"
-            return result
-
-        # Handle "X,000 – Y,000" or "X - Y" or "X to Y"
-       range_match = re.search(
-    r"([\d,]+(?:\.\d+)?)\s*(?:[-–]|to)\s*[₹$£]?\s*([\d,]+(?:\.\d+)?)", raw
-)
-        if range_match:
-            result["min"] = float(range_match.group(1).replace(",", ""))
-            result["max"] = float(range_match.group(2).replace(",", ""))
-            return result
-
-        # Single number
-        single = re.search(r"([\d,]+(?:\.\d+)?)", raw)
-        if single:
-            val = float(single.group(1).replace(",", ""))
-            result["min"] = result["max"] = val
-
+       @staticmethod
+def _parse_salary_string(raw: str) -> dict:
+    result = {"min": np.nan, "max": np.nan, "currency": "", "period": ""}
+    if not raw:
         return result
+
+    raw_lower = raw.lower()
+
+    # Detect currency
+    if "₹" in raw or "inr" in raw_lower or "lpa" in raw_lower:
+        result["currency"] = "INR"
+    elif "$" in raw or "usd" in raw_lower:
+        result["currency"] = "USD"
+    elif "£" in raw or "gbp" in raw_lower:
+        result["currency"] = "GBP"
+
+    # Detect period
+    if re.search(r"\bper\s+hour\b|/hr\b|hourly", raw_lower):
+        result["period"] = "hourly"
+    elif re.search(r"\bper\s+month\b|/mo\b|monthly|p\.m\.", raw_lower):
+        result["period"] = "monthly"
+    else:
+        result["period"] = "annual"
+
+    # Handle "X LPA" format (Indian: Lakhs Per Annum)
+    lpa_match = re.search(
+        r"([\d.]+)\s*[-–to]+\s*([\d.]+)\s*lpa", raw_lower
+    )
+    if lpa_match:
+        result["min"] = float(lpa_match.group(1)) * 100_000
+        result["max"] = float(lpa_match.group(2)) * 100_000
+        result["currency"] = "INR"
+        result["period"] = "annual"
+        return result
+
+    single_lpa = re.search(r"([\d.]+)\s*lpa", raw_lower)
+    if single_lpa:
+        val = float(single_lpa.group(1)) * 100_000
+        result["min"] = result["max"] = val
+        result["currency"] = "INR"
+        result["period"] = "annual"
+        return result
+
+    # Handle "X,000 – Y,000" or "X - Y" with optional currency symbol before second number
+    range_match = re.search(
+        r"([\d,]+(?:\.\d+)?)\s*(?:[-–]|to)\s*[₹$£]?\s*([\d,]+(?:\.\d+)?)", raw
+    )
+    if range_match:
+        result["min"] = float(range_match.group(1).replace(",", ""))
+        result["max"] = float(range_match.group(2).replace(",", ""))
+        return result
+
+    # Single number
+    single = re.search(r"([\d,]+(?:\.\d+)?)", raw)
+    if single:
+        val = float(single.group(1).replace(",", ""))
+        result["min"] = result["max"] = val
+
+    return result
 
     @staticmethod
     def _annualize_salary(df: pd.DataFrame) -> pd.DataFrame:
