@@ -1,0 +1,47 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg
+*.egg-info/
+dist/
+build/
+*.so
+venv/
+env/
+.venv/
+
+# Environment
+.env
+*.env
+
+# Data (raw scraped data — don't commit)
+data/raw/*.json
+data/processed/*.csv
+data/processed/charts/*.png
+logs/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb
+
+# Database
+*.db
+*.sqlite
+
+# Power BI
+*.pbix
+
+# Test artifacts
+.pytest_cache/
+.coverage
+htmlcov/
